@@ -9,38 +9,271 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
+import { Route as RezervaciaRouteImport } from './routes/rezervacia'
+import { Route as KontaktRouteImport } from './routes/kontakt'
+import { Route as GaleriaRouteImport } from './routes/galeria'
+import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
+import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin.index'
+import { Route as ApiPublicCalendarDoticsRouteImport } from './routes/api/public/calendar[.]ics'
+import { Route as AuthenticatedAdminSynchronizaciaRouteImport } from './routes/_authenticated/admin.synchronizacia'
+import { Route as AuthenticatedAdminSpravyRouteImport } from './routes/_authenticated/admin.spravy'
+import { Route as AuthenticatedAdminRezervacieRouteImport } from './routes/_authenticated/admin.rezervacie'
+import { Route as AuthenticatedAdminNastaveniaRouteImport } from './routes/_authenticated/admin.nastavenia'
+import { Route as AuthenticatedAdminKalendarRouteImport } from './routes/_authenticated/admin.kalendar'
+import { Route as ApiPublicHooksSyncCalendarsRouteImport } from './routes/api/public/hooks/sync-calendars'
 
+const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
+  id: '/sitemap.xml',
+  path: '/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RezervaciaRoute = RezervaciaRouteImport.update({
+  id: '/rezervacia',
+  path: '/rezervacia',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const KontaktRoute = KontaktRouteImport.update({
+  id: '/kontakt',
+  path: '/kontakt',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GaleriaRoute = GaleriaRouteImport.update({
+  id: '/galeria',
+  path: '/galeria',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
+  id: '/_authenticated',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedAdminIndexRoute = AuthenticatedAdminIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AuthenticatedAdminRoute,
+} as any)
+const ApiPublicCalendarDoticsRoute = ApiPublicCalendarDoticsRouteImport.update({
+  id: '/api/public/calendar.ics',
+  path: '/api/public/calendar.ics',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedAdminSynchronizaciaRoute =
+  AuthenticatedAdminSynchronizaciaRouteImport.update({
+    id: '/synchronizacia',
+    path: '/synchronizacia',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
+const AuthenticatedAdminSpravyRoute =
+  AuthenticatedAdminSpravyRouteImport.update({
+    id: '/spravy',
+    path: '/spravy',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
+const AuthenticatedAdminRezervacieRoute =
+  AuthenticatedAdminRezervacieRouteImport.update({
+    id: '/rezervacie',
+    path: '/rezervacie',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
+const AuthenticatedAdminNastaveniaRoute =
+  AuthenticatedAdminNastaveniaRouteImport.update({
+    id: '/nastavenia',
+    path: '/nastavenia',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
+const AuthenticatedAdminKalendarRoute =
+  AuthenticatedAdminKalendarRouteImport.update({
+    id: '/kalendar',
+    path: '/kalendar',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
+const ApiPublicHooksSyncCalendarsRoute =
+  ApiPublicHooksSyncCalendarsRouteImport.update({
+    id: '/api/public/hooks/sync-calendars',
+    path: '/api/public/hooks/sync-calendars',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
+  '/galeria': typeof GaleriaRoute
+  '/kontakt': typeof KontaktRoute
+  '/rezervacia': typeof RezervaciaRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/admin': typeof AuthenticatedAdminRouteWithChildren
+  '/admin/kalendar': typeof AuthenticatedAdminKalendarRoute
+  '/admin/nastavenia': typeof AuthenticatedAdminNastaveniaRoute
+  '/admin/rezervacie': typeof AuthenticatedAdminRezervacieRoute
+  '/admin/spravy': typeof AuthenticatedAdminSpravyRoute
+  '/admin/synchronizacia': typeof AuthenticatedAdminSynchronizaciaRoute
+  '/api/public/calendar.ics': typeof ApiPublicCalendarDoticsRoute
+  '/admin/': typeof AuthenticatedAdminIndexRoute
+  '/api/public/hooks/sync-calendars': typeof ApiPublicHooksSyncCalendarsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
+  '/galeria': typeof GaleriaRoute
+  '/kontakt': typeof KontaktRoute
+  '/rezervacia': typeof RezervaciaRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/admin/kalendar': typeof AuthenticatedAdminKalendarRoute
+  '/admin/nastavenia': typeof AuthenticatedAdminNastaveniaRoute
+  '/admin/rezervacie': typeof AuthenticatedAdminRezervacieRoute
+  '/admin/spravy': typeof AuthenticatedAdminSpravyRoute
+  '/admin/synchronizacia': typeof AuthenticatedAdminSynchronizaciaRoute
+  '/api/public/calendar.ics': typeof ApiPublicCalendarDoticsRoute
+  '/admin': typeof AuthenticatedAdminIndexRoute
+  '/api/public/hooks/sync-calendars': typeof ApiPublicHooksSyncCalendarsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
+  '/auth': typeof AuthRoute
+  '/galeria': typeof GaleriaRoute
+  '/kontakt': typeof KontaktRoute
+  '/rezervacia': typeof RezervaciaRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
+  '/_authenticated/admin/kalendar': typeof AuthenticatedAdminKalendarRoute
+  '/_authenticated/admin/nastavenia': typeof AuthenticatedAdminNastaveniaRoute
+  '/_authenticated/admin/rezervacie': typeof AuthenticatedAdminRezervacieRoute
+  '/_authenticated/admin/spravy': typeof AuthenticatedAdminSpravyRoute
+  '/_authenticated/admin/synchronizacia': typeof AuthenticatedAdminSynchronizaciaRoute
+  '/api/public/calendar.ics': typeof ApiPublicCalendarDoticsRoute
+  '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
+  '/api/public/hooks/sync-calendars': typeof ApiPublicHooksSyncCalendarsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/auth'
+    | '/galeria'
+    | '/kontakt'
+    | '/rezervacia'
+    | '/sitemap.xml'
+    | '/admin'
+    | '/admin/kalendar'
+    | '/admin/nastavenia'
+    | '/admin/rezervacie'
+    | '/admin/spravy'
+    | '/admin/synchronizacia'
+    | '/api/public/calendar.ics'
+    | '/admin/'
+    | '/api/public/hooks/sync-calendars'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/auth'
+    | '/galeria'
+    | '/kontakt'
+    | '/rezervacia'
+    | '/sitemap.xml'
+    | '/admin/kalendar'
+    | '/admin/nastavenia'
+    | '/admin/rezervacie'
+    | '/admin/spravy'
+    | '/admin/synchronizacia'
+    | '/api/public/calendar.ics'
+    | '/admin'
+    | '/api/public/hooks/sync-calendars'
+  id:
+    | '__root__'
+    | '/'
+    | '/_authenticated'
+    | '/auth'
+    | '/galeria'
+    | '/kontakt'
+    | '/rezervacia'
+    | '/sitemap.xml'
+    | '/_authenticated/admin'
+    | '/_authenticated/admin/kalendar'
+    | '/_authenticated/admin/nastavenia'
+    | '/_authenticated/admin/rezervacie'
+    | '/_authenticated/admin/spravy'
+    | '/_authenticated/admin/synchronizacia'
+    | '/api/public/calendar.ics'
+    | '/_authenticated/admin/'
+    | '/api/public/hooks/sync-calendars'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
+  AuthRoute: typeof AuthRoute
+  GaleriaRoute: typeof GaleriaRoute
+  KontaktRoute: typeof KontaktRoute
+  RezervaciaRoute: typeof RezervaciaRoute
+  SitemapDotxmlRoute: typeof SitemapDotxmlRoute
+  ApiPublicCalendarDoticsRoute: typeof ApiPublicCalendarDoticsRoute
+  ApiPublicHooksSyncCalendarsRoute: typeof ApiPublicHooksSyncCalendarsRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/sitemap.xml': {
+      id: '/sitemap.xml'
+      path: '/sitemap.xml'
+      fullPath: '/sitemap.xml'
+      preLoaderRoute: typeof SitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/rezervacia': {
+      id: '/rezervacia'
+      path: '/rezervacia'
+      fullPath: '/rezervacia'
+      preLoaderRoute: typeof RezervaciaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/kontakt': {
+      id: '/kontakt'
+      path: '/kontakt'
+      fullPath: '/kontakt'
+      preLoaderRoute: typeof KontaktRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/galeria': {
+      id: '/galeria'
+      path: '/galeria'
+      fullPath: '/galeria'
+      preLoaderRoute: typeof GaleriaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -48,22 +281,115 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/admin': {
+      id: '/_authenticated/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AuthenticatedAdminRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/admin/': {
+      id: '/_authenticated/admin/'
+      path: '/'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AuthenticatedAdminIndexRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/api/public/calendar.ics': {
+      id: '/api/public/calendar.ics'
+      path: '/api/public/calendar.ics'
+      fullPath: '/api/public/calendar.ics'
+      preLoaderRoute: typeof ApiPublicCalendarDoticsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/admin/synchronizacia': {
+      id: '/_authenticated/admin/synchronizacia'
+      path: '/synchronizacia'
+      fullPath: '/admin/synchronizacia'
+      preLoaderRoute: typeof AuthenticatedAdminSynchronizaciaRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/spravy': {
+      id: '/_authenticated/admin/spravy'
+      path: '/spravy'
+      fullPath: '/admin/spravy'
+      preLoaderRoute: typeof AuthenticatedAdminSpravyRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/rezervacie': {
+      id: '/_authenticated/admin/rezervacie'
+      path: '/rezervacie'
+      fullPath: '/admin/rezervacie'
+      preLoaderRoute: typeof AuthenticatedAdminRezervacieRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/nastavenia': {
+      id: '/_authenticated/admin/nastavenia'
+      path: '/nastavenia'
+      fullPath: '/admin/nastavenia'
+      preLoaderRoute: typeof AuthenticatedAdminNastaveniaRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/kalendar': {
+      id: '/_authenticated/admin/kalendar'
+      path: '/kalendar'
+      fullPath: '/admin/kalendar'
+      preLoaderRoute: typeof AuthenticatedAdminKalendarRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/api/public/hooks/sync-calendars': {
+      id: '/api/public/hooks/sync-calendars'
+      path: '/api/public/hooks/sync-calendars'
+      fullPath: '/api/public/hooks/sync-calendars'
+      preLoaderRoute: typeof ApiPublicHooksSyncCalendarsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
+interface AuthenticatedAdminRouteChildren {
+  AuthenticatedAdminKalendarRoute: typeof AuthenticatedAdminKalendarRoute
+  AuthenticatedAdminNastaveniaRoute: typeof AuthenticatedAdminNastaveniaRoute
+  AuthenticatedAdminRezervacieRoute: typeof AuthenticatedAdminRezervacieRoute
+  AuthenticatedAdminSpravyRoute: typeof AuthenticatedAdminSpravyRoute
+  AuthenticatedAdminSynchronizaciaRoute: typeof AuthenticatedAdminSynchronizaciaRoute
+  AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
+}
+
+const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
+  AuthenticatedAdminKalendarRoute: AuthenticatedAdminKalendarRoute,
+  AuthenticatedAdminNastaveniaRoute: AuthenticatedAdminNastaveniaRoute,
+  AuthenticatedAdminRezervacieRoute: AuthenticatedAdminRezervacieRoute,
+  AuthenticatedAdminSpravyRoute: AuthenticatedAdminSpravyRoute,
+  AuthenticatedAdminSynchronizaciaRoute: AuthenticatedAdminSynchronizaciaRoute,
+  AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
+}
+
+const AuthenticatedAdminRouteWithChildren =
+  AuthenticatedAdminRoute._addFileChildren(AuthenticatedAdminRouteChildren)
+
+interface AuthenticatedRouteRouteChildren {
+  AuthenticatedAdminRoute: typeof AuthenticatedAdminRouteWithChildren
+}
+
+const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedAdminRoute: AuthenticatedAdminRouteWithChildren,
+}
+
+const AuthenticatedRouteRouteWithChildren =
+  AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
+  AuthRoute: AuthRoute,
+  GaleriaRoute: GaleriaRoute,
+  KontaktRoute: KontaktRoute,
+  RezervaciaRoute: RezervaciaRoute,
+  SitemapDotxmlRoute: SitemapDotxmlRoute,
+  ApiPublicCalendarDoticsRoute: ApiPublicCalendarDoticsRoute,
+  ApiPublicHooksSyncCalendarsRoute: ApiPublicHooksSyncCalendarsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
