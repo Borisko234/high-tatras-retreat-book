@@ -1,5 +1,7 @@
-import { createFileRoute, Link, Outlet } from "@tanstack/react-router";
-import { LayoutDashboard, CalendarDays, Inbox, RefreshCcw, Settings, ArrowLeft, BookOpenCheck } from "lucide-react";
+import { createFileRoute, Link, Outlet, useNavigate, useRouter } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
+import { LayoutDashboard, CalendarDays, Inbox, RefreshCcw, Settings, ArrowLeft, BookOpenCheck, LogOut } from "lucide-react";
+import { lockAdmin } from "@/lib/gate.functions";
 import { useI18n } from "@/lib/i18n";
 
 export const Route = createFileRoute("/_authenticated/admin")({
