@@ -1,7 +1,15 @@
-import { createFileRoute, Outlet } from "@tanstack/react-router";
+import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
+import { getAdminGateStatus } from "@/lib/gate.functions";
 
-// Admin panel is intentionally public (single-owner site). If you want to
-// restrict it later, add a check here or move routes out of _authenticated/.
 export const Route = createFileRoute("/_authenticated")({
+  beforeLoad: async ({ location }) => {
+    const { unlocked } = await getAdminGateStatus();
+    if (!unlocked) {
+      throw redirect({
+        to: "/admin-login",
+        search: { redirect: location.href },
+      });
+    }
+  },
   component: () => <Outlet />,
 });

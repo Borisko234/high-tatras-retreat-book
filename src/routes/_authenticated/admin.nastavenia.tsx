@@ -2,12 +2,13 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useState } from "react";
-import { Save } from "lucide-react";
+import { Save, KeyRound } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { getSettings, updateSetting } from "@/lib/admin.functions";
+import { changeAdminPassword } from "@/lib/gate.functions";
 
 export const Route = createFileRoute("/_authenticated/admin/nastavenia")({
   component: SettingsPage,
@@ -16,9 +17,22 @@ export const Route = createFileRoute("/_authenticated/admin/nastavenia")({
 function SettingsPage() {
   const getS = useServerFn(getSettings);
   const upS = useServerFn(updateSetting);
+  const changePw = useServerFn(changeAdminPassword);
   const qc = useQueryClient();
 
   const { data: settings = {} } = useQuery({ queryKey: ["settings"], queryFn: () => getS() });
+
+  const [currentPw, setCurrentPw] = useState("");
+  const [nextPw, setNextPw] = useState("");
+  const changePwMut = useMutation({
+    mutationFn: (vars: { current: string; next: string }) => changePw({ data: vars }),
+    onSuccess: () => {
+      toast.success("Heslo bolo zmenené");
+      setCurrentPw("");
+      setNextPw("");
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
 
   const [price, setPrice] = useState("");
   const [contactEmail, setContactEmail] = useState("");
@@ -82,12 +96,30 @@ function SettingsPage() {
         </div>
       </section>
 
-      <section className="rounded-xl border border-border bg-card p-6 space-y-2">
-        <h2 className="font-display text-xl">Prístup do administrácie</h2>
+      <section className="rounded-xl border border-border bg-card p-6 space-y-4">
+        <div className="flex items-center gap-2">
+          <KeyRound className="size-5 text-primary" />
+          <h2 className="font-display text-xl">Heslo do administrácie</h2>
+        </div>
         <p className="text-sm text-muted-foreground">
-          Admin panel je otvorený na adrese <code className="text-foreground">/admin</code> – bez hesla.
-          Neuvádzajte túto adresu na verejnosti. Ak chcete pridať heslo, dajte vedieť.
+          Admin panel je chránený heslom. Predvolené heslo je <code className="text-foreground">12345678</code> – odporúčame ho zmeniť.
         </p>
+        <div className="grid gap-3 sm:grid-cols-2">
+          <div>
+            <Label>Aktuálne heslo</Label>
+            <Input type="password" value={currentPw} onChange={(e) => setCurrentPw(e.target.value)} />
+          </div>
+          <div>
+            <Label>Nové heslo</Label>
+            <Input type="password" value={nextPw} onChange={(e) => setNextPw(e.target.value)} />
+          </div>
+        </div>
+        <Button
+          disabled={changePwMut.isPending || !currentPw || nextPw.length < 4}
+          onClick={() => changePwMut.mutate({ current: currentPw, next: nextPw })}
+        >
+          Zmeniť heslo
+        </Button>
       </section>
     </div>
   );
