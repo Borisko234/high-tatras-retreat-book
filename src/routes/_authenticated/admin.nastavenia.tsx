@@ -17,9 +17,22 @@ export const Route = createFileRoute("/_authenticated/admin/nastavenia")({
 function SettingsPage() {
   const getS = useServerFn(getSettings);
   const upS = useServerFn(updateSetting);
+  const changePw = useServerFn(changeAdminPassword);
   const qc = useQueryClient();
 
   const { data: settings = {} } = useQuery({ queryKey: ["settings"], queryFn: () => getS() });
+
+  const [currentPw, setCurrentPw] = useState("");
+  const [nextPw, setNextPw] = useState("");
+  const changePwMut = useMutation({
+    mutationFn: (vars: { current: string; next: string }) => changePw({ data: vars }),
+    onSuccess: () => {
+      toast.success("Heslo bolo zmenené");
+      setCurrentPw("");
+      setNextPw("");
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
 
   const [price, setPrice] = useState("");
   const [contactEmail, setContactEmail] = useState("");
