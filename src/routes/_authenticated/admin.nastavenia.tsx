@@ -2,12 +2,13 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useState } from "react";
-import { Save } from "lucide-react";
+import { Save, KeyRound } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { getSettings, updateSetting } from "@/lib/admin.functions";
+import { changeAdminPassword } from "@/lib/gate.functions";
 
 export const Route = createFileRoute("/_authenticated/admin/nastavenia")({
   component: SettingsPage,
