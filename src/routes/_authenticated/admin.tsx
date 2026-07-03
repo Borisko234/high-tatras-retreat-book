@@ -1,12 +1,6 @@
-import { createFileRoute, Link, Outlet, useNavigate, useRouter } from "@tanstack/react-router";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useServerFn } from "@tanstack/react-start";
-import { useEffect } from "react";
-import { LayoutDashboard, CalendarDays, Inbox, RefreshCcw, Settings, LogOut, BookOpenCheck } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { supabase } from "@/integrations/supabase/client";
+import { createFileRoute, Link, Outlet } from "@tanstack/react-router";
+import { LayoutDashboard, CalendarDays, Inbox, RefreshCcw, Settings, ArrowLeft, BookOpenCheck } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
-import { getMyRole } from "@/lib/admin.functions";
 
 export const Route = createFileRoute("/_authenticated/admin")({
   component: AdminLayout,
@@ -14,26 +8,6 @@ export const Route = createFileRoute("/_authenticated/admin")({
 
 function AdminLayout() {
   const { t } = useI18n();
-  const navigate = useNavigate();
-  const router = useRouter();
-  const queryClient = useQueryClient();
-  const role = useServerFn(getMyRole);
-
-  const { data, isLoading } = useQuery({
-    queryKey: ["my-role"],
-    queryFn: () => role(),
-  });
-
-  useEffect(() => {
-    if (data && !data.isAdmin) {
-      supabase.auth.signOut().then(() => navigate({ to: "/auth" }));
-    }
-  }, [data, navigate]);
-
-  if (isLoading) {
-    return <div className="min-h-screen flex items-center justify-center text-muted-foreground">{t("common.loading")}</div>;
-  }
-  if (!data?.isAdmin) return null;
 
   const links = [
     { to: "/admin", label: t("admin.dashboard"), icon: LayoutDashboard, exact: true },
@@ -44,24 +18,19 @@ function AdminLayout() {
     { to: "/admin/nastavenia", label: t("admin.settings"), icon: Settings },
   ];
 
-  async function signOut() {
-    await queryClient.cancelQueries();
-    queryClient.clear();
-    await supabase.auth.signOut();
-    router.navigate({ to: "/auth", replace: true });
-  }
-
   return (
     <div className="min-h-screen bg-background">
       <header className="border-b border-border bg-card">
         <div className="mx-auto max-w-7xl px-4 h-14 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2">
             <span className="text-primary">❀</span>
-            <span className="font-display text-lg">Červené maky <span className="text-muted-foreground font-sans text-sm">/ Admin</span></span>
+            <span className="font-display text-lg">
+              Červené maky <span className="text-muted-foreground font-sans text-sm">/ Admin</span>
+            </span>
           </Link>
-          <Button variant="ghost" size="sm" onClick={signOut}>
-            <LogOut className="size-4" /> {t("admin.logout")}
-          </Button>
+          <Link to="/" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
+            <ArrowLeft className="size-4" /> Späť na web
+          </Link>
         </div>
       </header>
 
@@ -89,3 +58,4 @@ function AdminLayout() {
     </div>
   );
 }
+
