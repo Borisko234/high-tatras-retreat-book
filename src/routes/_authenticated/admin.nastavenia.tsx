@@ -96,12 +96,30 @@ function SettingsPage() {
         </div>
       </section>
 
-      <section className="rounded-xl border border-border bg-card p-6 space-y-2">
-        <h2 className="font-display text-xl">Prístup do administrácie</h2>
+      <section className="rounded-xl border border-border bg-card p-6 space-y-4">
+        <div className="flex items-center gap-2">
+          <KeyRound className="size-5 text-primary" />
+          <h2 className="font-display text-xl">Heslo do administrácie</h2>
+        </div>
         <p className="text-sm text-muted-foreground">
-          Admin panel je otvorený na adrese <code className="text-foreground">/admin</code> – bez hesla.
-          Neuvádzajte túto adresu na verejnosti. Ak chcete pridať heslo, dajte vedieť.
+          Admin panel je chránený heslom. Predvolené heslo je <code className="text-foreground">12345678</code> – odporúčame ho zmeniť.
         </p>
+        <div className="grid gap-3 sm:grid-cols-2">
+          <div>
+            <Label>Aktuálne heslo</Label>
+            <Input type="password" value={currentPw} onChange={(e) => setCurrentPw(e.target.value)} />
+          </div>
+          <div>
+            <Label>Nové heslo</Label>
+            <Input type="password" value={nextPw} onChange={(e) => setNextPw(e.target.value)} />
+          </div>
+        </div>
+        <Button
+          disabled={changePwMut.isPending || !currentPw || nextPw.length < 4}
+          onClick={() => changePwMut.mutate({ current: currentPw, next: nextPw })}
+        >
+          Zmeniť heslo
+        </Button>
       </section>
     </div>
   );
