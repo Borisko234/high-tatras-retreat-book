@@ -3,6 +3,12 @@
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { parseICS } from "./ical.server";
 
+function normalizeFeedUrl(u: string): string {
+  const t = u.trim();
+  if (t.toLowerCase().startsWith("webcal://")) return "https://" + t.slice(9);
+  return t;
+}
+
 export async function runFeedSync() {
   const { data: feeds, error } = await supabaseAdmin
     .from("ical_feeds")
@@ -14,11 +20,19 @@ export async function runFeedSync() {
 
   for (const feed of feeds ?? []) {
     try {
-      const res = await fetch(feed.url, {
-        headers: { "User-Agent": "Cervene-Maky-Calendar-Sync/1.0" },
+      const url = normalizeFeedUrl(feed.url);
+      const res = await fetch(url, {
+        redirect: "follow",
+        headers: {
+          "User-Agent": "Mozilla/5.0 (compatible; CerveneMakyCalendar/1.0)",
+          Accept: "text/calendar, text/plain, */*",
+        },
       });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText}`);
       const text = await res.text();
+      if (!text.includes("BEGIN:VCALENDAR")) {
+        throw new Error("Odpoveď neobsahuje iCal dáta – skontrolujte URL");
+      }
       const events = parseICS(text);
 
       // replace strategy: delete old, insert fresh

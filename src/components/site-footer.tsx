@@ -30,7 +30,7 @@ export function SiteFooter() {
       <div className="border-t border-white/10">
         <div className="mx-auto max-w-6xl px-4 py-4 text-xs opacity-70 flex flex-wrap justify-between gap-2">
           <span>© {new Date().getFullYear()} Červené maky · {t("footer.rights")}</span>
-          <Link to="/auth" className="hover:opacity-100">Admin</Link>
+          <Link to="/admin" className="hover:opacity-100">Admin</Link>
         </div>
       </div>
     </footer>
