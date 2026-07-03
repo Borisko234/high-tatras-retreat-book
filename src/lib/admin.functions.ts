@@ -2,6 +2,7 @@
 // single-owner tool. If you want to lock it down later, put the /admin route
 // behind a simple shared password or restore Supabase auth.
 import { createServerFn } from "@tanstack/react-start";
+import { requireAdminUnlocked } from "./gate.functions";
 import { z } from "zod";
 
 /** Kept for backwards compatibility with /auth page — always returns admin=true. */
@@ -25,6 +26,7 @@ function normalizeUrl(u: string): string {
 
 /** Admin: dashboard summary. */
 export const getAdminDashboard = createServerFn({ method: "GET" }).handler(async () => {
+    await requireAdminUnlocked();
   const sb = await admin();
   const today = new Date().toISOString().slice(0, 10);
   const [pending, upcoming, unread, feeds] = await Promise.all([
@@ -49,6 +51,7 @@ export const getAdminDashboard = createServerFn({ method: "GET" }).handler(async
 
 /** Admin: list bookings. */
 export const listBookings = createServerFn({ method: "GET" }).handler(async () => {
+    await requireAdminUnlocked();
   const sb = await admin();
   const { data } = await sb.from("bookings").select("*").order("created_at", { ascending: false });
   return data ?? [];
@@ -63,6 +66,7 @@ export const updateBookingStatus = createServerFn({ method: "POST" })
     }).parse(d),
   )
   .handler(async ({ data }) => {
+    await requireAdminUnlocked();
     const sb = await admin();
     const { error } = await sb.from("bookings").update({ status: data.status }).eq("id", data.id);
     if (error) throw new Error(error.message);
@@ -73,6 +77,7 @@ export const updateBookingStatus = createServerFn({ method: "POST" })
 export const deleteBooking = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => z.object({ id: z.string().uuid() }).parse(d))
   .handler(async ({ data }) => {
+    await requireAdminUnlocked();
     const sb = await admin();
     const { error } = await sb.from("bookings").delete().eq("id", data.id);
     if (error) throw new Error(error.message);
@@ -81,6 +86,7 @@ export const deleteBooking = createServerFn({ method: "POST" })
 
 /** Admin: list iCal feeds. */
 export const listFeeds = createServerFn({ method: "GET" }).handler(async () => {
+    await requireAdminUnlocked();
   const sb = await admin();
   const { data } = await sb.from("ical_feeds").select("*").order("created_at", { ascending: true });
   return data ?? [];
@@ -109,6 +115,7 @@ export const addFeed = createServerFn({ method: "POST" })
     return { ...raw, url };
   })
   .handler(async ({ data }) => {
+    await requireAdminUnlocked();
     const sb = await admin();
     const { error } = await sb
       .from("ical_feeds")
@@ -121,6 +128,7 @@ export const addFeed = createServerFn({ method: "POST" })
 export const deleteFeed = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => z.object({ id: z.string().uuid() }).parse(d))
   .handler(async ({ data }) => {
+    await requireAdminUnlocked();
     const sb = await admin();
     const { error } = await sb.from("ical_feeds").delete().eq("id", data.id);
     if (error) throw new Error(error.message);
@@ -129,12 +137,14 @@ export const deleteFeed = createServerFn({ method: "POST" })
 
 /** Admin: trigger a sync now. */
 export const syncFeedsNow = createServerFn({ method: "POST" }).handler(async () => {
+    await requireAdminUnlocked();
   const { runFeedSync } = await import("./sync.server");
   return runFeedSync();
 });
 
 /** Admin: list manual blocks. */
 export const listManualBlocks = createServerFn({ method: "GET" }).handler(async () => {
+    await requireAdminUnlocked();
   const sb = await admin();
   const { data } = await sb.from("manual_blocks").select("*").order("starts_on", { ascending: true });
   return data ?? [];
@@ -150,6 +160,7 @@ export const addManualBlock = createServerFn({ method: "POST" })
     }).parse(d),
   )
   .handler(async ({ data }) => {
+    await requireAdminUnlocked();
     const sb = await admin();
     if (data.endsOn <= data.startsOn) throw new Error("Invalid range");
     const { error } = await sb
@@ -163,6 +174,7 @@ export const addManualBlock = createServerFn({ method: "POST" })
 export const deleteManualBlock = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => z.object({ id: z.string().uuid() }).parse(d))
   .handler(async ({ data }) => {
+    await requireAdminUnlocked();
     const sb = await admin();
     const { error } = await sb.from("manual_blocks").delete().eq("id", data.id);
     if (error) throw new Error(error.message);
@@ -171,6 +183,7 @@ export const deleteManualBlock = createServerFn({ method: "POST" })
 
 /** Admin: list contact messages. */
 export const listMessages = createServerFn({ method: "GET" }).handler(async () => {
+    await requireAdminUnlocked();
   const sb = await admin();
   const { data } = await sb.from("contact_messages").select("*").order("created_at", { ascending: false });
   return data ?? [];
@@ -182,6 +195,7 @@ export const markMessageRead = createServerFn({ method: "POST" })
     z.object({ id: z.string().uuid(), read: z.boolean() }).parse(d),
   )
   .handler(async ({ data }) => {
+    await requireAdminUnlocked();
     const sb = await admin();
     await sb.from("contact_messages").update({ read: data.read }).eq("id", data.id);
     return { ok: true };
@@ -191,6 +205,7 @@ export const markMessageRead = createServerFn({ method: "POST" })
 export const deleteMessage = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => z.object({ id: z.string().uuid() }).parse(d))
   .handler(async ({ data }) => {
+    await requireAdminUnlocked();
     const sb = await admin();
     await sb.from("contact_messages").delete().eq("id", data.id);
     return { ok: true };
@@ -215,6 +230,7 @@ export const updateSetting = createServerFn({ method: "POST" })
     }).parse(d),
   )
   .handler(async ({ data }) => {
+    await requireAdminUnlocked();
     const sb = await admin();
     const { error } = await sb
       .from("app_settings")
