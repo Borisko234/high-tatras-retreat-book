@@ -10,6 +10,9 @@ export const Route = createFileRoute("/_authenticated/admin")({
 
 function AdminLayout() {
   const { t } = useI18n();
+  const lock = useServerFn(lockAdmin);
+  const router = useRouter();
+  const navigate = useNavigate();
 
   const links = [
     { to: "/admin", label: t("admin.dashboard"), icon: LayoutDashboard, exact: true },
@@ -19,6 +22,12 @@ function AdminLayout() {
     { to: "/admin/spravy", label: t("admin.messages"), icon: Inbox },
     { to: "/admin/nastavenia", label: t("admin.settings"), icon: Settings },
   ];
+
+  async function handleLogout() {
+    await lock();
+    await router.invalidate();
+    navigate({ to: "/admin-login", replace: true });
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -30,11 +39,20 @@ function AdminLayout() {
               Červené maky <span className="text-muted-foreground font-sans text-sm">/ Admin</span>
             </span>
           </Link>
-          <Link to="/" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
-            <ArrowLeft className="size-4" /> Späť na web
-          </Link>
+          <div className="flex items-center gap-4">
+            <Link to="/" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
+              <ArrowLeft className="size-4" /> Späť na web
+            </Link>
+            <button
+              onClick={handleLogout}
+              className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
+            >
+              <LogOut className="size-4" /> Odhlásiť
+            </button>
+          </div>
         </div>
       </header>
+
 
       <div className="mx-auto max-w-7xl grid md:grid-cols-[220px_1fr] gap-6 px-4 py-6">
         <nav className="md:sticky md:top-6 h-fit">
