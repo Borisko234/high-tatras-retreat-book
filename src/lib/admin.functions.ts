@@ -211,9 +211,23 @@ export const deleteMessage = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
-/** Public: read settings. */
+/** Public: read settings. Only non-sensitive keys are exposed. */
 type SettingValue = string | number | boolean | null;
+const PUBLIC_SETTING_KEYS = ["base_nightly_price", "contact_email", "contact_phone"] as const;
 export const getSettings = createServerFn({ method: "GET" }).handler(async () => {
+  const sb = await admin();
+  const { data } = await sb
+    .from("app_settings")
+    .select("*")
+    .in("key", PUBLIC_SETTING_KEYS as unknown as string[]);
+  const map: Record<string, SettingValue> = {};
+  for (const row of data ?? []) map[row.key] = row.value as SettingValue;
+  return map;
+});
+
+/** Admin: read all settings (including sensitive keys). */
+export const getAllSettings = createServerFn({ method: "GET" }).handler(async () => {
+  await requireAdminUnlocked();
   const sb = await admin();
   const { data } = await sb.from("app_settings").select("*");
   const map: Record<string, SettingValue> = {};
