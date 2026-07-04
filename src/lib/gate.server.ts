@@ -16,7 +16,9 @@ export function sessionConfig() {
     cookie: {
       httpOnly: true,
       secure: true,
-      sameSite: "lax" as const,
+      // "none" so the cookie is sent inside the Lovable preview iframe
+      // (which is a cross-site context). Requires secure:true.
+      sameSite: "none" as const,
       path: "/",
     },
   };
