@@ -150,25 +150,78 @@ export const listManualBlocks = createServerFn({ method: "GET" }).handler(async 
   return data ?? [];
 });
 
-/** Admin: add a manual block. */
+/** Admin: add a manual block. Single-day blocks are allowed (endsOn = startsOn). */
 export const addManualBlock = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) =>
     z.object({
       startsOn: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
       endsOn: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
       reason: z.string().trim().max(200).optional().or(z.literal("")),
+      color: z.string().trim().max(20).optional().or(z.literal("")),
     }).parse(d),
   )
   .handler(async ({ data }) => {
     await requireAdminUnlocked();
     const sb = await admin();
-    if (data.endsOn <= data.startsOn) throw new Error("Invalid range");
-    const { error } = await sb
-      .from("manual_blocks")
-      .insert({ starts_on: data.startsOn, ends_on: data.endsOn, reason: data.reason || null });
+    // Allow single-day: normalize endsOn to startsOn + 1 day when they're equal.
+    let endsOn = data.endsOn;
+    if (endsOn === data.startsOn) {
+      const dt = new Date(data.startsOn + "T00:00:00Z");
+      dt.setUTCDate(dt.getUTCDate() + 1);
+      endsOn = dt.toISOString().slice(0, 10);
+    } else if (endsOn < data.startsOn) {
+      throw new Error("Neplatný rozsah");
+    }
+    const { error } = await sb.from("manual_blocks").insert({
+      starts_on: data.startsOn,
+      ends_on: endsOn,
+      reason: data.reason || null,
+      color: data.color || "#94a3b8",
+    });
     if (error) throw new Error(error.message);
     return { ok: true };
   });
+
+/** Admin: update a manual block color / reason. */
+export const updateManualBlock = createServerFn({ method: "POST" })
+  .inputValidator((d: unknown) =>
+    z.object({
+      id: z.string().uuid(),
+      color: z.string().trim().max(20).optional(),
+      reason: z.string().trim().max(200).optional().or(z.literal("")),
+    }).parse(d),
+  )
+  .handler(async ({ data }) => {
+    await requireAdminUnlocked();
+    const sb = await admin();
+    const patch: Record<string, unknown> = {};
+    if (data.color) patch.color = data.color;
+    if (data.reason !== undefined) patch.reason = data.reason || null;
+    const { error } = await sb.from("manual_blocks").update(patch).eq("id", data.id);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+/** Admin: update an iCal feed (color / label). */
+export const updateFeed = createServerFn({ method: "POST" })
+  .inputValidator((d: unknown) =>
+    z.object({
+      id: z.string().uuid(),
+      color: z.string().trim().max(20).optional(),
+      label: z.string().trim().max(80).optional(),
+    }).parse(d),
+  )
+  .handler(async ({ data }) => {
+    await requireAdminUnlocked();
+    const sb = await admin();
+    const patch: Record<string, unknown> = {};
+    if (data.color) patch.color = data.color;
+    if (data.label) patch.label = data.label;
+    const { error } = await sb.from("ical_feeds").update(patch).eq("id", data.id);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
 
 /** Admin: delete manual block. */
 export const deleteManualBlock = createServerFn({ method: "POST" })
