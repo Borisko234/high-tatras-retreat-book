@@ -7,7 +7,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { listFeeds, addFeed, deleteFeed, syncFeedsNow } from "@/lib/admin.functions";
+import { listFeeds, addFeed, deleteFeed, updateFeed, syncFeedsNow } from "@/lib/admin.functions";
 
 export const Route = createFileRoute("/_authenticated/admin/synchronizacia")({
   component: SyncPage,
@@ -18,7 +18,17 @@ function SyncPage() {
   const add = useServerFn(addFeed);
   const del = useServerFn(deleteFeed);
   const sync = useServerFn(syncFeedsNow);
+  const upd = useServerFn(updateFeed);
   const qc = useQueryClient();
+
+  const updM = useMutation({
+    mutationFn: (v: { id: string; color?: string; label?: string }) => upd({ data: v }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["feeds"] });
+      qc.invalidateQueries({ queryKey: ["admin-blocked-ranges"] });
+    },
+  });
+
 
   const { data: feeds = [] } = useQuery({ queryKey: ["feeds"], queryFn: () => list() });
   const [exportUrl, setExportUrl] = useState("");
@@ -106,7 +116,14 @@ function SyncPage() {
               <li key={f.id} className="py-3 flex flex-wrap items-center gap-3 justify-between">
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
-                    <span className="size-3 rounded-full" style={{ background: f.color }} />
+                    <input
+                      type="color"
+                      className="size-4 rounded border-0 bg-transparent cursor-pointer p-0"
+                      value={f.color || "#888888"}
+                      onChange={(e) => updM.mutate({ id: f.id, color: e.target.value })}
+                      title="Zmeniť farbu (zobrazí sa v admin kalendári)"
+                    />
+
                     <span className="font-medium">{f.label}</span>
                     {f.last_error ? (
                       <span className="inline-flex items-center gap-1 text-xs text-destructive"><XCircle className="size-3" /> chyba</span>

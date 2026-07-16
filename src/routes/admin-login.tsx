@@ -22,6 +22,7 @@ function LoginPage() {
   const router = useRouter();
   const { redirect } = Route.useSearch();
   const unlock = useServerFn(unlockAdmin);
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [err, setErr] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -31,9 +32,9 @@ function LoginPage() {
     setBusy(true);
     setErr(null);
     try {
-      const { ok } = await unlock({ data: { password } });
+      const { ok } = await unlock({ data: { email, password } });
       if (!ok) {
-        setErr("Nesprávne heslo");
+        setErr("Nesprávny e-mail alebo heslo");
         return;
       }
       await router.invalidate();
@@ -54,8 +55,20 @@ function LoginPage() {
           <h1 className="font-display text-2xl">Prihlásenie do administrácie</h1>
         </div>
         <p className="text-sm text-muted-foreground">
-          Zadajte heslo pre prístup do admin panelu.
+          Zadajte e-mail a heslo pre prístup do admin panelu.
         </p>
+        <div className="space-y-2">
+          <Label htmlFor="email">E-mail</Label>
+          <Input
+            id="email"
+            type="email"
+            autoComplete="username"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            autoFocus
+            required
+          />
+        </div>
         <div className="space-y-2">
           <Label htmlFor="pw">Heslo</Label>
           <Input
@@ -64,13 +77,16 @@ function LoginPage() {
             autoComplete="current-password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            autoFocus
+            required
           />
         </div>
         {err && <p className="text-sm text-destructive">{err}</p>}
-        <Button type="submit" disabled={busy || !password} className="w-full">
+        <Button type="submit" disabled={busy || !email || !password} className="w-full">
           {busy ? "Overujem…" : "Prihlásiť sa"}
         </Button>
+        <p className="text-xs text-muted-foreground">
+          Predvolené: <code>admin@example.com</code> / <code>12345678</code>. V Nastaveniach ich zmeňte.
+        </p>
       </form>
     </div>
   );
