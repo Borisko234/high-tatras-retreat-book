@@ -194,7 +194,7 @@ export const updateManualBlock = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     await requireAdminUnlocked();
     const sb = await admin();
-    const patch: Record<string, unknown> = {};
+    const patch: Record<string, string | null> = {};
     if (data.color) patch.color = data.color;
     if (data.reason !== undefined) patch.reason = data.reason || null;
     const { error } = await sb.from("manual_blocks").update(patch).eq("id", data.id);
@@ -214,7 +214,7 @@ export const updateFeed = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     await requireAdminUnlocked();
     const sb = await admin();
-    const patch: Record<string, unknown> = {};
+    const patch: Record<string, string | null> = {};
     if (data.color) patch.color = data.color;
     if (data.label) patch.label = data.label;
     const { error } = await sb.from("ical_feeds").update(patch).eq("id", data.id);
