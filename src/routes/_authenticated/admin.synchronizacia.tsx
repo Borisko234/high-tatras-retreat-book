@@ -18,7 +18,17 @@ function SyncPage() {
   const add = useServerFn(addFeed);
   const del = useServerFn(deleteFeed);
   const sync = useServerFn(syncFeedsNow);
+  const upd = useServerFn(updateFeed);
   const qc = useQueryClient();
+
+  const updM = useMutation({
+    mutationFn: (v: { id: string; color?: string; label?: string }) => upd({ data: v }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["feeds"] });
+      qc.invalidateQueries({ queryKey: ["admin-blocked-ranges"] });
+    },
+  });
+
 
   const { data: feeds = [] } = useQuery({ queryKey: ["feeds"], queryFn: () => list() });
   const [exportUrl, setExportUrl] = useState("");
