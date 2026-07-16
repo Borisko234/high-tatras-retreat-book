@@ -1,9 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { Mail, Phone, Trash2, CheckCheck } from "lucide-react";
+import { Mail, Phone, Trash2, CheckCheck, Reply } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { listMessages, markMessageRead, deleteMessage } from "@/lib/admin.functions";
+import { listMessages, markMessageRead, deleteMessage, getAllSettings } from "@/lib/admin.functions";
 
 export const Route = createFileRoute("/_authenticated/admin/spravy")({
   component: MessagesPage,
@@ -13,9 +13,12 @@ function MessagesPage() {
   const list = useServerFn(listMessages);
   const mark = useServerFn(markMessageRead);
   const del = useServerFn(deleteMessage);
+  const getS = useServerFn(getAllSettings);
   const qc = useQueryClient();
 
   const { data = [] } = useQuery({ queryKey: ["messages"], queryFn: () => list() });
+  const { data: settings = {} } = useQuery({ queryKey: ["all-settings"], queryFn: () => getS() });
+  const siteName = String(settings.contact_email ?? "").split("@")[1] || "Červené maky";
 
   const markM = useMutation({
     mutationFn: (v: { id: string; read: boolean }) => mark({ data: v }),
@@ -26,9 +29,24 @@ function MessagesPage() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ["messages"] }),
   });
 
+  function replyHref(m: { email: string; name: string; message: string; created_at: string }) {
+    const subject = `Re: Vaša správa – ${siteName}`;
+    const quoted = m.message
+      .split("\n")
+      .map((l) => `> ${l}`)
+      .join("\n");
+    const body = `Dobrý deň ${m.name},
+
+`+ `\n\n---\nDňa ${new Date(m.created_at).toLocaleString("sk")} ste nám napísali:\n${quoted}`;
+    return `mailto:${encodeURIComponent(m.email)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  }
+
   return (
     <div className="space-y-4">
       <h1 className="font-display text-3xl">Správy od hostí</h1>
+      <p className="text-sm text-muted-foreground">
+        Odpoveď sa otvorí vo vašom e-mailovom klientovi a odošle sa priamo z vášho e-mailu.
+      </p>
       {data.length === 0 ? (
         <p className="text-muted-foreground">Žiadne správy.</p>
       ) : (
@@ -53,6 +71,11 @@ function MessagesPage() {
                 </div>
               </div>
               <div className="flex gap-2 self-start">
+                <Button asChild size="sm">
+                  <a href={replyHref(m)}>
+                    <Reply className="size-4" /> Odpovedať
+                  </a>
+                </Button>
                 <Button size="sm" variant="outline" onClick={() => markM.mutate({ id: m.id, read: !m.read })}>
                   <CheckCheck className="size-4" /> {m.read ? "Neprečítané" : "Prečítané"}
                 </Button>
