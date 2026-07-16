@@ -34,45 +34,60 @@ export type Database = {
       }
       bookings: {
         Row: {
+          adults_count: number
           check_in: string
           check_out: string
+          children_count: number
           created_at: string
+          deposit_amount: number | null
           guest_email: string
           guest_name: string
           guest_phone: string | null
           guests_count: number
           id: string
           message: string | null
+          payment_status: string
+          pets_count: number
           source: Database["public"]["Enums"]["booking_source"]
           status: Database["public"]["Enums"]["booking_status"]
           total_price: number | null
           updated_at: string
         }
         Insert: {
+          adults_count?: number
           check_in: string
           check_out: string
+          children_count?: number
           created_at?: string
+          deposit_amount?: number | null
           guest_email: string
           guest_name: string
           guest_phone?: string | null
           guests_count: number
           id?: string
           message?: string | null
+          payment_status?: string
+          pets_count?: number
           source?: Database["public"]["Enums"]["booking_source"]
           status?: Database["public"]["Enums"]["booking_status"]
           total_price?: number | null
           updated_at?: string
         }
         Update: {
+          adults_count?: number
           check_in?: string
           check_out?: string
+          children_count?: number
           created_at?: string
+          deposit_amount?: number | null
           guest_email?: string
           guest_name?: string
           guest_phone?: string | null
           guests_count?: number
           id?: string
           message?: string | null
+          payment_status?: string
+          pets_count?: number
           source?: Database["public"]["Enums"]["booking_source"]
           status?: Database["public"]["Enums"]["booking_status"]
           total_price?: number | null
@@ -186,6 +201,7 @@ export type Database = {
       }
       manual_blocks: {
         Row: {
+          color: string
           created_at: string
           ends_on: string
           id: string
@@ -193,6 +209,7 @@ export type Database = {
           starts_on: string
         }
         Insert: {
+          color?: string
           created_at?: string
           ends_on: string
           id?: string
@@ -200,6 +217,7 @@ export type Database = {
           starts_on: string
         }
         Update: {
+          color?: string
           created_at?: string
           ends_on?: string
           id?: string
