@@ -106,7 +106,14 @@ function SyncPage() {
               <li key={f.id} className="py-3 flex flex-wrap items-center gap-3 justify-between">
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
-                    <span className="size-3 rounded-full" style={{ background: f.color }} />
+                    <input
+                      type="color"
+                      className="size-4 rounded border-0 bg-transparent cursor-pointer p-0"
+                      value={f.color || "#888888"}
+                      onChange={(e) => updM.mutate({ id: f.id, color: e.target.value })}
+                      title="Zmeniť farbu (zobrazí sa v admin kalendári)"
+                    />
+
                     <span className="font-medium">{f.label}</span>
                     {f.last_error ? (
                       <span className="inline-flex items-center gap-1 text-xs text-destructive"><XCircle className="size-3" /> chyba</span>
