@@ -266,7 +266,23 @@ export const deleteMessage = createServerFn({ method: "POST" })
 
 /** Public: read settings. Only non-sensitive keys are exposed. */
 type SettingValue = string | number | boolean | null;
-const PUBLIC_SETTING_KEYS = ["base_nightly_price", "contact_email", "contact_phone"] as const;
+const PUBLIC_SETTING_KEYS = [
+  "base_nightly_price",
+  "base_occupancy",
+  "extra_adult_price",
+  "child_price",
+  "child_age_max",
+  "pet_fee",
+  "pet_fee_mode",
+  "cleaning_fee",
+  "currency",
+  "contact_email",
+  "contact_phone",
+  "payments_mode",
+  "deposit_percent",
+  "max_guests",
+] as const;
+
 export const getSettings = createServerFn({ method: "GET" }).handler(async () => {
   const sb = await admin();
   const { data } = await sb
