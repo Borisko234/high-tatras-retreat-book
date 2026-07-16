@@ -13,7 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { useI18n } from "@/lib/i18n";
-import { getBlockedRanges, submitBooking } from "@/lib/availability.functions";
+import { getBlockedRanges, submitBooking, computeTotal } from "@/lib/availability.functions";
 import { getSettings } from "@/lib/admin.functions";
 import { toISODate, nightsBetween } from "@/lib/dates";
 
@@ -44,14 +44,41 @@ function BookingPage() {
   });
 
   const [range, setRange] = useState<DateRange | undefined>(undefined);
-  const [form, setForm] = useState({ name: "", email: "", phone: "", guests: "2", message: "" });
+  const [form, setForm] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    adults: "2",
+    children: "0",
+    pets: "0",
+    message: "",
+  });
   const [done, setDone] = useState(false);
 
   const nights =
     range?.from && range?.to ? nightsBetween(toISODate(range.from), toISODate(range.to)) : 0;
-  const basePrice = Number(settings.base_nightly_price ?? 0);
-  const total = nights * basePrice;
   const currency = String(settings.currency ?? "EUR");
+  const curSym = currency === "EUR" ? "€" : currency;
+  const paymentsMode = String(settings.payments_mode ?? "off");
+  const depositPercent = Number(settings.deposit_percent ?? 30);
+
+  const breakdown =
+    nights > 0
+      ? computeTotal({
+          nights,
+          adults: Number(form.adults) || 1,
+          children: Number(form.children) || 0,
+          pets: Number(form.pets) || 0,
+          settings: settings as Record<string, unknown>,
+        })
+      : null;
+
+  const depositDue =
+    breakdown && paymentsMode === "deposit"
+      ? Math.round((breakdown.total * depositPercent) / 100)
+      : breakdown && paymentsMode === "full"
+        ? breakdown.total
+        : 0;
 
   const canSubmit =
     range?.from &&
@@ -59,7 +86,7 @@ function BookingPage() {
     nights > 0 &&
     form.name.trim() &&
     form.email.trim() &&
-    Number(form.guests) >= 1;
+    Number(form.adults) >= 1;
 
   const mutation = useMutation({
     mutationFn: async () => {
@@ -68,7 +95,9 @@ function BookingPage() {
         data: {
           checkIn: toISODate(range.from),
           checkOut: toISODate(range.to),
-          guests: Number(form.guests),
+          adults: Number(form.adults),
+          children: Number(form.children) || 0,
+          pets: Number(form.pets) || 0,
           name: form.name.trim(),
           email: form.email.trim(),
           phone: form.phone.trim(),
@@ -97,6 +126,11 @@ function BookingPage() {
             <p className="mt-3 text-sm text-muted-foreground">
               {form.name} · {range?.from && toISODate(range.from)} → {range?.to && toISODate(range.to)} · {nights} {t("booking.nights")}
             </p>
+            {depositDue > 0 && (
+              <p className="mt-3 text-sm text-muted-foreground">
+                {paymentsMode === "deposit" ? "Záloha" : "Suma na úhradu"}: <strong>{depositDue} {curSym}</strong>. Platobné pokyny vám pošleme e-mailom.
+              </p>
+            )}
           </div>
         </main>
         <SiteFooter />
@@ -129,16 +163,49 @@ function BookingPage() {
               )}
             </div>
 
-            {basePrice > 0 && (
-              <div className="text-sm text-muted-foreground flex justify-between border-t border-border pt-3">
-                <span>{t("booking.priceNote")}</span>
-                <span>{basePrice} {currency === "EUR" ? "€" : currency}</span>
-              </div>
-            )}
-            {nights > 0 && total > 0 && (
-              <div className="text-base text-foreground flex justify-between font-medium border-t border-border pt-3">
-                <span>{t("booking.total")}</span>
-                <span>{total} {currency === "EUR" ? "€" : currency}</span>
+            {breakdown && breakdown.total > 0 && (
+              <div className="space-y-1 text-sm border-t border-border pt-3">
+                <div className="flex justify-between text-muted-foreground">
+                  <span>Ubytovanie ({nights} × {breakdown.base} {curSym})</span>
+                  <span>{breakdown.base * nights} {curSym}</span>
+                </div>
+                {breakdown.extraAdultsTotal > 0 && (
+                  <div className="flex justify-between text-muted-foreground">
+                    <span>Ďalší dospelí ({breakdown.extraAdults})</span>
+                    <span>{breakdown.extraAdultsTotal} {curSym}</span>
+                  </div>
+                )}
+                {breakdown.childrenTotal > 0 && (
+                  <div className="flex justify-between text-muted-foreground">
+                    <span>Deti ({form.children})</span>
+                    <span>{breakdown.childrenTotal} {curSym}</span>
+                  </div>
+                )}
+                {breakdown.petsTotal > 0 && (
+                  <div className="flex justify-between text-muted-foreground">
+                    <span>Domáce zvieratá ({form.pets})</span>
+                    <span>{breakdown.petsTotal} {curSym}</span>
+                  </div>
+                )}
+                {breakdown.cleaning > 0 && (
+                  <div className="flex justify-between text-muted-foreground">
+                    <span>Poplatok za upratovanie</span>
+                    <span>{breakdown.cleaning} {curSym}</span>
+                  </div>
+                )}
+                <div className="flex justify-between font-medium text-foreground pt-2 border-t border-border">
+                  <span>{t("booking.total")}</span>
+                  <span>{breakdown.total} {curSym}</span>
+                </div>
+                {paymentsMode === "deposit" && depositDue > 0 && (
+                  <div className="flex justify-between text-primary text-xs pt-1">
+                    <span>Záloha ({depositPercent}%)</span>
+                    <span>{depositDue} {curSym}</span>
+                  </div>
+                )}
+                {paymentsMode === "full" && (
+                  <div className="text-xs text-primary pt-1">Platba online v plnej výške po odoslaní.</div>
+                )}
               </div>
             )}
 
@@ -149,18 +216,38 @@ function BookingPage() {
                 mutation.mutate();
               }}
             >
-              <div>
-                <Label htmlFor="guests">{t("booking.guests")}</Label>
-                <Input
-                  id="guests"
-                  type="number"
-                  min={1}
-                  max={9}
-                  value={form.guests}
-                  onChange={(e) => setForm((s) => ({ ...s, guests: e.target.value }))}
-                  required
-                />
+              <div className="grid grid-cols-3 gap-2">
+                <div>
+                  <Label htmlFor="adults">Dospelí</Label>
+                  <Input
+                    id="adults" type="number" min={1} max={9}
+                    value={form.adults}
+                    onChange={(e) => setForm((s) => ({ ...s, adults: e.target.value }))}
+                    required
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="children">Deti</Label>
+                  <Input
+                    id="children" type="number" min={0} max={9}
+                    value={form.children}
+                    onChange={(e) => setForm((s) => ({ ...s, children: e.target.value }))}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="pets">Zvieratá</Label>
+                  <Input
+                    id="pets" type="number" min={0} max={9}
+                    value={form.pets}
+                    onChange={(e) => setForm((s) => ({ ...s, pets: e.target.value }))}
+                  />
+                </div>
               </div>
+              {settings.child_age_max != null && Number(form.children) > 0 && (
+                <p className="text-xs text-muted-foreground -mt-1">
+                  Cena pre deti platí do {String(settings.child_age_max)} rokov.
+                </p>
+              )}
               <div>
                 <Label htmlFor="name">{t("booking.name")}</Label>
                 <Input
