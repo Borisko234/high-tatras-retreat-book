@@ -7,7 +7,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { listFeeds, addFeed, deleteFeed, syncFeedsNow } from "@/lib/admin.functions";
+import { listFeeds, addFeed, deleteFeed, updateFeed, syncFeedsNow } from "@/lib/admin.functions";
 
 export const Route = createFileRoute("/_authenticated/admin/synchronizacia")({
   component: SyncPage,
