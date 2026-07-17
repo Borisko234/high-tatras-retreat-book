@@ -65,16 +65,20 @@ function BookingPage() {
   const askPets = settings.ask_pets == null ? true : Boolean(settings.ask_pets);
 
 
+  const childrenNum = askChildren ? Number(form.children) || 0 : 0;
+  const petsNum = askPets ? Number(form.pets) || 0 : 0;
+
   const breakdown =
     nights > 0
       ? computeTotal({
           nights,
           adults: Number(form.adults) || 1,
-          children: Number(form.children) || 0,
-          pets: Number(form.pets) || 0,
+          children: childrenNum,
+          pets: petsNum,
           settings: settings as Record<string, unknown>,
         })
       : null;
+
 
   const depositDue =
     breakdown && paymentsMode === "deposit"
