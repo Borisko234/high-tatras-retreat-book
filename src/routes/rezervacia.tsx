@@ -224,7 +224,7 @@ function BookingPage() {
                 mutation.mutate();
               }}
             >
-              <div className="grid grid-cols-3 gap-2">
+              <div className={`grid gap-2 ${askChildren && askPets ? "grid-cols-3" : askChildren || askPets ? "grid-cols-2" : "grid-cols-1"}`}>
                 <div>
                   <Label htmlFor="adults">Dospelí</Label>
                   <Input
@@ -234,28 +234,33 @@ function BookingPage() {
                     required
                   />
                 </div>
-                <div>
-                  <Label htmlFor="children">Deti</Label>
-                  <Input
-                    id="children" type="number" min={0} max={9}
-                    value={form.children}
-                    onChange={(e) => setForm((s) => ({ ...s, children: e.target.value }))}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="pets">Zvieratá</Label>
-                  <Input
-                    id="pets" type="number" min={0} max={9}
-                    value={form.pets}
-                    onChange={(e) => setForm((s) => ({ ...s, pets: e.target.value }))}
-                  />
-                </div>
+                {askChildren && (
+                  <div>
+                    <Label htmlFor="children">Deti</Label>
+                    <Input
+                      id="children" type="number" min={0} max={9}
+                      value={form.children}
+                      onChange={(e) => setForm((s) => ({ ...s, children: e.target.value }))}
+                    />
+                  </div>
+                )}
+                {askPets && (
+                  <div>
+                    <Label htmlFor="pets">Zvieratá</Label>
+                    <Input
+                      id="pets" type="number" min={0} max={9}
+                      value={form.pets}
+                      onChange={(e) => setForm((s) => ({ ...s, pets: e.target.value }))}
+                    />
+                  </div>
+                )}
               </div>
-              {settings.child_age_max != null && Number(form.children) > 0 && (
+              {askChildren && settings.child_age_max != null && Number(form.children) > 0 && (
                 <p className="text-xs text-muted-foreground -mt-1">
                   Cena pre deti platí do {String(settings.child_age_max)} rokov.
                 </p>
               )}
+
               <div>
                 <Label htmlFor="name">{t("booking.name")}</Label>
                 <Input
