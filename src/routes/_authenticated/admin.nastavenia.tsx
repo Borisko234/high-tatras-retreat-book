@@ -211,6 +211,35 @@ function SettingsPage() {
           />
         </div>
 
+        <div className="flex items-center justify-between gap-4 border-t border-border pt-4">
+          <div>
+            <div className="font-medium">Pýtať sa na počet detí</div>
+            <p className="text-sm text-muted-foreground">Zobrazí pole „Deti“ vo formulári rezervácie a zohľadní detskú cenu.</p>
+          </div>
+          <Switch
+            checked={f.ask_children}
+            onCheckedChange={(v) => {
+              setF((s) => ({ ...s, ask_children: v }));
+              save.mutate({ key: "ask_children", value: v });
+            }}
+          />
+        </div>
+
+        <div className="flex items-center justify-between gap-4 border-t border-border pt-4">
+          <div>
+            <div className="font-medium">Pýtať sa na domáce zvieratá</div>
+            <p className="text-sm text-muted-foreground">Zobrazí pole „Zvieratá“ vo formulári rezervácie a zohľadní poplatok za zviera.</p>
+          </div>
+          <Switch
+            checked={f.ask_pets}
+            onCheckedChange={(v) => {
+              setF((s) => ({ ...s, ask_pets: v }));
+              save.mutate({ key: "ask_pets", value: v });
+            }}
+          />
+        </div>
+
+
         <div className="border-t border-border pt-4 space-y-3">
           <div className="font-medium">Platby online</div>
           <p className="text-sm text-muted-foreground">
