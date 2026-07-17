@@ -61,17 +61,24 @@ function BookingPage() {
   const curSym = currency === "EUR" ? "€" : currency;
   const paymentsMode = String(settings.payments_mode ?? "off");
   const depositPercent = Number(settings.deposit_percent ?? 30);
+  const askChildren = settings.ask_children == null ? true : Boolean(settings.ask_children);
+  const askPets = settings.ask_pets == null ? true : Boolean(settings.ask_pets);
+
+
+  const childrenNum = askChildren ? Number(form.children) || 0 : 0;
+  const petsNum = askPets ? Number(form.pets) || 0 : 0;
 
   const breakdown =
     nights > 0
       ? computeTotal({
           nights,
           adults: Number(form.adults) || 1,
-          children: Number(form.children) || 0,
-          pets: Number(form.pets) || 0,
+          children: childrenNum,
+          pets: petsNum,
           settings: settings as Record<string, unknown>,
         })
       : null;
+
 
   const depositDue =
     breakdown && paymentsMode === "deposit"
@@ -96,8 +103,9 @@ function BookingPage() {
           checkIn: toISODate(range.from),
           checkOut: toISODate(range.to),
           adults: Number(form.adults),
-          children: Number(form.children) || 0,
-          pets: Number(form.pets) || 0,
+          children: childrenNum,
+          pets: petsNum,
+
           name: form.name.trim(),
           email: form.email.trim(),
           phone: form.phone.trim(),
@@ -216,7 +224,7 @@ function BookingPage() {
                 mutation.mutate();
               }}
             >
-              <div className="grid grid-cols-3 gap-2">
+              <div className={`grid gap-2 ${askChildren && askPets ? "grid-cols-3" : askChildren || askPets ? "grid-cols-2" : "grid-cols-1"}`}>
                 <div>
                   <Label htmlFor="adults">Dospelí</Label>
                   <Input
@@ -226,28 +234,33 @@ function BookingPage() {
                     required
                   />
                 </div>
-                <div>
-                  <Label htmlFor="children">Deti</Label>
-                  <Input
-                    id="children" type="number" min={0} max={9}
-                    value={form.children}
-                    onChange={(e) => setForm((s) => ({ ...s, children: e.target.value }))}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="pets">Zvieratá</Label>
-                  <Input
-                    id="pets" type="number" min={0} max={9}
-                    value={form.pets}
-                    onChange={(e) => setForm((s) => ({ ...s, pets: e.target.value }))}
-                  />
-                </div>
+                {askChildren && (
+                  <div>
+                    <Label htmlFor="children">Deti</Label>
+                    <Input
+                      id="children" type="number" min={0} max={9}
+                      value={form.children}
+                      onChange={(e) => setForm((s) => ({ ...s, children: e.target.value }))}
+                    />
+                  </div>
+                )}
+                {askPets && (
+                  <div>
+                    <Label htmlFor="pets">Zvieratá</Label>
+                    <Input
+                      id="pets" type="number" min={0} max={9}
+                      value={form.pets}
+                      onChange={(e) => setForm((s) => ({ ...s, pets: e.target.value }))}
+                    />
+                  </div>
+                )}
               </div>
-              {settings.child_age_max != null && Number(form.children) > 0 && (
+              {askChildren && settings.child_age_max != null && Number(form.children) > 0 && (
                 <p className="text-xs text-muted-foreground -mt-1">
                   Cena pre deti platí do {String(settings.child_age_max)} rokov.
                 </p>
               )}
+
               <div>
                 <Label htmlFor="name">{t("booking.name")}</Label>
                 <Input

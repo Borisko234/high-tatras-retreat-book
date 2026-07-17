@@ -73,6 +73,8 @@ function SettingsPage() {
     auto_confirm: false,
     payments_mode: "off",
     deposit_percent: "30",
+    ask_children: true,
+    ask_pets: true,
   });
 
   useEffect(() => {
@@ -92,8 +94,11 @@ function SettingsPage() {
       auto_confirm: Boolean(settings.auto_confirm),
       payments_mode: String(settings.payments_mode ?? "off"),
       deposit_percent: String(settings.deposit_percent ?? "30"),
+      ask_children: settings.ask_children == null ? true : Boolean(settings.ask_children),
+      ask_pets: settings.ask_pets == null ? true : Boolean(settings.ask_pets),
     });
   }, [settings]);
+
 
   const num = (v: string) => (v === "" ? 0 : Number(v) || 0);
 
@@ -205,6 +210,35 @@ function SettingsPage() {
             }}
           />
         </div>
+
+        <div className="flex items-center justify-between gap-4 border-t border-border pt-4">
+          <div>
+            <div className="font-medium">Pýtať sa na počet detí</div>
+            <p className="text-sm text-muted-foreground">Zobrazí pole „Deti“ vo formulári rezervácie a zohľadní detskú cenu.</p>
+          </div>
+          <Switch
+            checked={f.ask_children}
+            onCheckedChange={(v) => {
+              setF((s) => ({ ...s, ask_children: v }));
+              save.mutate({ key: "ask_children", value: v });
+            }}
+          />
+        </div>
+
+        <div className="flex items-center justify-between gap-4 border-t border-border pt-4">
+          <div>
+            <div className="font-medium">Pýtať sa na domáce zvieratá</div>
+            <p className="text-sm text-muted-foreground">Zobrazí pole „Zvieratá“ vo formulári rezervácie a zohľadní poplatok za zviera.</p>
+          </div>
+          <Switch
+            checked={f.ask_pets}
+            onCheckedChange={(v) => {
+              setF((s) => ({ ...s, ask_pets: v }));
+              save.mutate({ key: "ask_pets", value: v });
+            }}
+          />
+        </div>
+
 
         <div className="border-t border-border pt-4 space-y-3">
           <div className="font-medium">Platby online</div>

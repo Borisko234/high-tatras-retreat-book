@@ -282,7 +282,10 @@ const PUBLIC_SETTING_KEYS = [
   "payments_mode",
   "deposit_percent",
   "max_guests",
+  "ask_children",
+  "ask_pets",
 ] as const;
+
 
 export const getSettings = createServerFn({ method: "GET" }).handler(async () => {
   const sb = await admin();
@@ -322,3 +325,109 @@ export const updateSetting = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     return { ok: true };
   });
+
+/* ============================== GALLERY ============================== */
+
+const SIGNED_URL_TTL = 60 * 60 * 24 * 7; // 7 days
+
+async function withSignedUrls(sb: Awaited<ReturnType<typeof admin>>, rows: Array<{ id: string; storage_path: string; alt: string | null; position: number; active: boolean }>) {
+  if (rows.length === 0) return [];
+  const paths = rows.map((r) => r.storage_path);
+  const { data: signed } = await sb.storage.from("gallery").createSignedUrls(paths, SIGNED_URL_TTL);
+  const map = new Map<string, string>();
+  for (const s of signed ?? []) if (s.path && s.signedUrl) map.set(s.path, s.signedUrl);
+  return rows.map((r) => ({ ...r, url: map.get(r.storage_path) ?? "" }));
+}
+
+/** Public: list active gallery images with signed URLs, ordered. */
+export const getGalleryImages = createServerFn({ method: "GET" }).handler(async () => {
+  const sb = await admin();
+  const { data } = await sb
+    .from("gallery_images")
+    .select("id, storage_path, alt, position, active")
+    .eq("active", true)
+    .order("position", { ascending: true });
+  return withSignedUrls(sb, data ?? []);
+});
+
+/** Admin: list all gallery images (active + inactive) with signed URLs. */
+export const listGalleryImages = createServerFn({ method: "GET" }).handler(async () => {
+  await requireAdminUnlocked();
+  const sb = await admin();
+  const { data } = await sb
+    .from("gallery_images")
+    .select("id, storage_path, alt, position, active")
+    .order("position", { ascending: true });
+  return withSignedUrls(sb, data ?? []);
+});
+
+/** Admin: upload a new image. `dataUrl` is a base64 data URL. */
+export const uploadGalleryImage = createServerFn({ method: "POST" })
+  .inputValidator((d: unknown) =>
+    z.object({
+      dataUrl: z.string().min(20).max(15_000_000),
+      filename: z.string().trim().min(1).max(200),
+      alt: z.string().trim().max(200).optional().or(z.literal("")),
+    }).parse(d),
+  )
+  .handler(async ({ data }) => {
+    await requireAdminUnlocked();
+    const match = data.dataUrl.match(/^data:(image\/[a-zA-Z0-9.+-]+);base64,(.+)$/);
+    if (!match) throw new Error("Neplatný obrázok");
+    const contentType = match[1];
+    const buf = Buffer.from(match[2], "base64");
+    if (buf.byteLength > 10 * 1024 * 1024) throw new Error("Obrázok je väčší ako 10 MB");
+    const ext = (data.filename.split(".").pop() || "jpg").toLowerCase().replace(/[^a-z0-9]/g, "").slice(0, 5) || "jpg";
+    const path = `${crypto.randomUUID()}.${ext}`;
+    const sb = await admin();
+    const up = await sb.storage.from("gallery").upload(path, buf, { contentType, upsert: false });
+    if (up.error) throw new Error(up.error.message);
+    // Position: after the last one
+    const { data: last } = await sb.from("gallery_images").select("position").order("position", { ascending: false }).limit(1);
+    const nextPos = ((last?.[0]?.position ?? -1) as number) + 1;
+    const { error } = await sb.from("gallery_images").insert({
+      storage_path: path,
+      alt: data.alt || null,
+      position: nextPos,
+      active: true,
+    });
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+/** Admin: delete a gallery image. */
+export const deleteGalleryImage = createServerFn({ method: "POST" })
+  .inputValidator((d: unknown) => z.object({ id: z.string().uuid() }).parse(d))
+  .handler(async ({ data }) => {
+    await requireAdminUnlocked();
+    const sb = await admin();
+    const { data: row } = await sb.from("gallery_images").select("storage_path").eq("id", data.id).maybeSingle();
+    if (row?.storage_path) await sb.storage.from("gallery").remove([row.storage_path]);
+    const { error } = await sb.from("gallery_images").delete().eq("id", data.id);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+/** Admin: reorder gallery. Pass full ordered list of ids. */
+export const reorderGalleryImages = createServerFn({ method: "POST" })
+  .inputValidator((d: unknown) => z.object({ ids: z.array(z.string().uuid()).min(1).max(200) }).parse(d))
+  .handler(async ({ data }) => {
+    await requireAdminUnlocked();
+    const sb = await admin();
+    await Promise.all(
+      data.ids.map((id, idx) => sb.from("gallery_images").update({ position: idx }).eq("id", id)),
+    );
+    return { ok: true };
+  });
+
+/** Admin: toggle active. */
+export const toggleGalleryImage = createServerFn({ method: "POST" })
+  .inputValidator((d: unknown) => z.object({ id: z.string().uuid(), active: z.boolean() }).parse(d))
+  .handler(async ({ data }) => {
+    await requireAdminUnlocked();
+    const sb = await admin();
+    const { error } = await sb.from("gallery_images").update({ active: data.active }).eq("id", data.id);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
