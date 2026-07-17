@@ -282,7 +282,10 @@ const PUBLIC_SETTING_KEYS = [
   "payments_mode",
   "deposit_percent",
   "max_guests",
+  "ask_children",
+  "ask_pets",
 ] as const;
+
 
 export const getSettings = createServerFn({ method: "GET" }).handler(async () => {
   const sb = await admin();
