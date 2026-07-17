@@ -1,6 +1,6 @@
 import { createFileRoute, Link, Outlet, useNavigate, useRouter } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { LayoutDashboard, CalendarDays, Inbox, RefreshCcw, Settings, ArrowLeft, BookOpenCheck, LogOut } from "lucide-react";
+import { LayoutDashboard, CalendarDays, Inbox, RefreshCcw, Settings, ArrowLeft, BookOpenCheck, LogOut, Image } from "lucide-react";
 import { lockAdmin } from "@/lib/gate.functions";
 import { useI18n } from "@/lib/i18n";
 
@@ -18,10 +18,12 @@ function AdminLayout() {
     { to: "/admin", label: t("admin.dashboard"), icon: LayoutDashboard, exact: true },
     { to: "/admin/rezervacie", label: t("admin.bookings"), icon: BookOpenCheck },
     { to: "/admin/kalendar", label: t("admin.calendar"), icon: CalendarDays },
+    { to: "/admin/galeria", label: "Galéria", icon: Image },
     { to: "/admin/synchronizacia", label: t("admin.sync"), icon: RefreshCcw },
     { to: "/admin/spravy", label: t("admin.messages"), icon: Inbox },
     { to: "/admin/nastavenia", label: t("admin.settings"), icon: Settings },
   ];
+
 
   async function handleLogout() {
     await lock();

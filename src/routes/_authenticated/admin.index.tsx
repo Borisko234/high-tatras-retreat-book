@@ -1,13 +1,27 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { Inbox, CalendarClock, RefreshCcw, AlertTriangle } from "lucide-react";
+import { useMemo } from "react";
+import {
+  Inbox,
+  CalendarClock,
+  RefreshCcw,
+  AlertTriangle,
+  CalendarCheck,
+  CalendarX,
+  BedDouble,
+  LogIn,
+  LogOut,
+} from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getAdminDashboard } from "@/lib/admin.functions";
 
 export const Route = createFileRoute("/_authenticated/admin/")({
   component: Dashboard,
 });
+
+const iso = (d: Date) => d.toISOString().slice(0, 10);
 
 function Dashboard() {
   const fn = useServerFn(getAdminDashboard);
@@ -16,75 +30,92 @@ function Dashboard() {
     queryFn: () => fn(),
   });
 
+  const today = iso(new Date());
+  const in7 = useMemo(() => {
+    const d = new Date();
+    d.setDate(d.getDate() + 7);
+    return iso(d);
+  }, []);
+
   if (isLoading || !data) return <p className="text-muted-foreground">Načítavam…</p>;
+
+  const upcoming = data.upcoming ?? [];
+  const arrivalsToday = upcoming.filter((b) => b.check_in === today);
+  const departuresToday = upcoming.filter((b) => b.check_out === today);
+  const stayingNow = upcoming.filter((b) => b.check_in <= today && b.check_out > today);
+  const next7 = upcoming.filter((b) => b.check_in >= today && b.check_in <= in7);
+  const pending = upcoming.filter((b) => b.status === "pending");
+  const failedFeeds = data.feeds.filter((f) => f.last_error);
 
   return (
     <div className="space-y-6">
       <h1 className="font-display text-3xl">Prehľad</h1>
 
-      <div className="grid sm:grid-cols-3 gap-4">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm text-muted-foreground font-normal flex items-center gap-2">
-              <CalendarClock className="size-4" /> Čakajúce žiadosti
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="text-3xl font-display">{data.pendingCount}</CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm text-muted-foreground font-normal flex items-center gap-2">
-              <Inbox className="size-4" /> Neprečítané správy
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="text-3xl font-display">{data.unreadMessages}</CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm text-muted-foreground font-normal flex items-center gap-2">
-              <RefreshCcw className="size-4" /> Aktívnych feedov
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="text-3xl font-display">
-            {data.feeds.filter((f) => f.enabled).length}
-          </CardContent>
-        </Card>
+      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <StatCard icon={<LogIn className="size-4" />} label="Príchody dnes" value={arrivalsToday.length} />
+        <StatCard icon={<LogOut className="size-4" />} label="Odchody dnes" value={departuresToday.length} />
+        <StatCard icon={<BedDouble className="size-4" />} label="Hosťujú teraz" value={stayingNow.length} />
+        <StatCard icon={<CalendarClock className="size-4" />} label="Čakajúce žiadosti" value={data.pendingCount} />
+        <StatCard icon={<Inbox className="size-4" />} label="Neprečítané správy" value={data.unreadMessages} />
+        <StatCard icon={<RefreshCcw className="size-4" />} label="Aktívne feedy" value={data.feeds.filter((f) => f.enabled).length} />
+        <StatCard icon={<CalendarCheck className="size-4" />} label="Najbližších 7 dní" value={next7.length} />
+        <StatCard icon={<CalendarX className="size-4" />} label="Chybné feedy" value={failedFeeds.length} tone={failedFeeds.length ? "warn" : undefined} />
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="font-display text-xl">Najbližšie rezervácie</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {data.upcoming.length === 0 ? (
-            <p className="text-sm text-muted-foreground">Žiadne nadchádzajúce rezervácie.</p>
-          ) : (
-            <table className="w-full text-sm">
-              <thead className="text-left text-xs uppercase tracking-wider text-muted-foreground border-b border-border">
-                <tr><th className="py-2">Hosť</th><th>Termín</th><th>Hostí</th><th>Stav</th></tr>
-              </thead>
-              <tbody>
-                {data.upcoming.map((b) => (
-                  <tr key={b.id} className="border-b border-border/60 last:border-0">
-                    <td className="py-3">{b.guest_name}</td>
-                    <td>{b.check_in} → {b.check_out}</td>
-                    <td>{b.guests_count}</td>
-                    <td>
-                      <span className={`text-xs px-2 py-0.5 rounded-full ${
-                        b.status === "confirmed"
-                          ? "bg-primary/15 text-primary"
-                          : "bg-amber-500/15 text-amber-700"
-                      }`}>{b.status}</span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-        </CardContent>
-      </Card>
+      <Tabs defaultValue="today">
+        <TabsList>
+          <TabsTrigger value="today">Dnes</TabsTrigger>
+          <TabsTrigger value="pending">
+            Čakajúce {pending.length > 0 && <span className="ml-1 text-xs">({pending.length})</span>}
+          </TabsTrigger>
+          <TabsTrigger value="upcoming">Najbližšie</TabsTrigger>
+          <TabsTrigger value="sync">
+            Synchronizácia {failedFeeds.length > 0 && <span className="ml-1 text-xs text-destructive">({failedFeeds.length})</span>}
+          </TabsTrigger>
+        </TabsList>
 
-      {data.feeds.some((f) => f.last_error) && (
+        <TabsContent value="today" className="space-y-4">
+          <BookingSection title="Príchody dnes" bookings={arrivalsToday} empty="Dnes nikto neprichádza." />
+          <BookingSection title="Odchody dnes" bookings={departuresToday} empty="Dnes nikto neodchádza." />
+          <BookingSection title="Hosťujú teraz" bookings={stayingNow} empty="Momentálne nie sú u vás hostia." />
+        </TabsContent>
+
+        <TabsContent value="pending">
+          <BookingSection title="Čakajú na potvrdenie" bookings={pending} empty="Žiadne čakajúce rezervácie." />
+        </TabsContent>
+
+        <TabsContent value="upcoming">
+          <BookingSection title="Najbližších 10 rezervácií" bookings={upcoming} empty="Žiadne nadchádzajúce rezervácie." />
+        </TabsContent>
+
+        <TabsContent value="sync" className="space-y-3">
+          {data.feeds.length === 0 ? (
+            <p className="text-sm text-muted-foreground">Zatiaľ nemáte pridaný žiadny externý kalendár.</p>
+          ) : (
+            <ul className="divide-y divide-border border border-border rounded-xl bg-card">
+              {data.feeds.map((f) => (
+                <li key={f.id} className="p-4 flex items-center justify-between gap-3">
+                  <div className="min-w-0">
+                    <div className="font-medium truncate">{f.label}</div>
+                    <div className="text-xs text-muted-foreground">
+                      {f.last_synced_at ? `Naposledy: ${new Date(f.last_synced_at).toLocaleString("sk-SK")}` : "Zatiaľ nesynchronizované"}
+                    </div>
+                    {f.last_error && <div className="text-xs text-destructive mt-1">{f.last_error}</div>}
+                  </div>
+                  <span className={`text-xs px-2 py-0.5 rounded-full ${f.enabled ? "bg-primary/15 text-primary" : "bg-muted text-muted-foreground"}`}>
+                    {f.enabled ? "Aktívny" : "Vypnutý"}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+          <Link to="/admin/synchronizacia" className="text-sm text-primary hover:underline inline-block">
+            Otvoriť synchronizáciu →
+          </Link>
+        </TabsContent>
+      </Tabs>
+
+      {failedFeeds.length > 0 && (
         <div className="rounded-xl border border-destructive/30 bg-destructive/5 p-4 flex gap-3">
           <AlertTriangle className="size-5 text-destructive shrink-0" />
           <div className="text-sm">
@@ -94,5 +125,69 @@ function Dashboard() {
         </div>
       )}
     </div>
+  );
+}
+
+function StatCard({ icon, label, value, tone }: { icon: React.ReactNode; label: string; value: number; tone?: "warn" }) {
+  return (
+    <Card>
+      <CardHeader className="pb-2">
+        <CardTitle className="text-sm text-muted-foreground font-normal flex items-center gap-2">
+          {icon} {label}
+        </CardTitle>
+      </CardHeader>
+      <CardContent className={`text-3xl font-display ${tone === "warn" && value > 0 ? "text-destructive" : ""}`}>{value}</CardContent>
+    </Card>
+  );
+}
+
+type BookingRow = {
+  id: string;
+  guest_name: string;
+  check_in: string;
+  check_out: string;
+  status: string;
+  guests_count: number;
+};
+
+function BookingSection({ title, bookings, empty }: { title: string; bookings: BookingRow[]; empty: string }) {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="font-display text-lg">{title}</CardTitle>
+      </CardHeader>
+      <CardContent>
+        {bookings.length === 0 ? (
+          <p className="text-sm text-muted-foreground">{empty}</p>
+        ) : (
+          <table className="w-full text-sm">
+            <thead className="text-left text-xs uppercase tracking-wider text-muted-foreground border-b border-border">
+              <tr>
+                <th className="py-2">Hosť</th>
+                <th>Termín</th>
+                <th>Hostí</th>
+                <th>Stav</th>
+              </tr>
+            </thead>
+            <tbody>
+              {bookings.map((b) => (
+                <tr key={b.id} className="border-b border-border/60 last:border-0">
+                  <td className="py-3">{b.guest_name}</td>
+                  <td>{b.check_in} → {b.check_out}</td>
+                  <td>{b.guests_count}</td>
+                  <td>
+                    <span className={`text-xs px-2 py-0.5 rounded-full ${
+                      b.status === "confirmed"
+                        ? "bg-primary/15 text-primary"
+                        : "bg-amber-500/15 text-amber-700"
+                    }`}>{b.status}</span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </CardContent>
+    </Card>
   );
 }

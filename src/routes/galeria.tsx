@@ -1,10 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { Camera } from "lucide-react";
-import heroImage from "@/assets/hero.jpg";
-import poppiesImage from "@/assets/poppies.jpg";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { useI18n } from "@/lib/i18n";
+import { getGalleryImages } from "@/lib/admin.functions";
 
 export const Route = createFileRoute("/galeria")({
   head: () => ({
@@ -16,15 +17,15 @@ export const Route = createFileRoute("/galeria")({
   component: GalleryPage,
 });
 
+type Image = { id: string; url: string; alt: string | null };
+
 function GalleryPage() {
   const { t } = useI18n();
-
-  // 8 placeholder slots; the first two use the generated images, rest are visual placeholders
-  const items = [
-    { src: heroImage, label: "Pohľad na dom" },
-    { src: poppiesImage, label: "Maková lúka" },
-    null, null, null, null, null, null,
-  ];
+  const fetchImages = useServerFn(getGalleryImages);
+  const { data: images = [], isLoading } = useQuery({
+    queryKey: ["public-gallery"],
+    queryFn: () => fetchImages() as Promise<Image[]>,
+  });
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
@@ -36,30 +37,32 @@ function GalleryPage() {
           <p className="mt-3 text-muted-foreground">{t("gallery.intro")}</p>
         </header>
 
-        <div className="mt-10 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
-          {items.map((item, i) => (
-            <div
-              key={i}
-              className={`relative overflow-hidden rounded-xl border border-border bg-muted ${
-                i === 0 ? "col-span-2 row-span-2 aspect-square" : "aspect-square"
-              }`}
-            >
-              {item ? (
+        {isLoading ? (
+          <p className="mt-10 text-sm text-muted-foreground">Načítavam…</p>
+        ) : images.length === 0 ? (
+          <div className="mt-10 rounded-xl border border-dashed border-border bg-muted/30 p-12 text-center text-muted-foreground flex flex-col items-center gap-3">
+            <Camera className="size-8 opacity-60" strokeWidth={1.4} />
+            <p className="text-sm">{t("gallery.placeholder")}</p>
+          </div>
+        ) : (
+          <div className="mt-10 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
+            {images.map((img, i) => (
+              <div
+                key={img.id}
+                className={`relative overflow-hidden rounded-xl border border-border bg-muted ${
+                  i === 0 ? "col-span-2 row-span-2 aspect-square" : "aspect-square"
+                }`}
+              >
                 <img
-                  src={item.src}
-                  alt={item.label}
+                  src={img.url}
+                  alt={img.alt ?? ""}
                   className="size-full object-cover transition-transform duration-700 hover:scale-105"
                   loading="lazy"
                 />
-              ) : (
-                <div className="size-full flex flex-col items-center justify-center text-muted-foreground gap-2">
-                  <Camera className="size-6 opacity-60" strokeWidth={1.4} />
-                  <span className="text-xs">{t("gallery.placeholder")}</span>
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
+              </div>
+            ))}
+          </div>
+        )}
       </main>
       <SiteFooter />
     </div>
