@@ -25,6 +25,7 @@ import { Route as AuthenticatedAdminSpravyRouteImport } from './routes/_authenti
 import { Route as AuthenticatedAdminRezervacieRouteImport } from './routes/_authenticated/admin.rezervacie'
 import { Route as AuthenticatedAdminNastaveniaRouteImport } from './routes/_authenticated/admin.nastavenia'
 import { Route as AuthenticatedAdminKalendarRouteImport } from './routes/_authenticated/admin.kalendar'
+import { Route as AuthenticatedAdminGaleriaRouteImport } from './routes/_authenticated/admin.galeria'
 import { Route as ApiPublicHooksSyncCalendarsRouteImport } from './routes/api/public/hooks/sync-calendars'
 
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
@@ -111,6 +112,12 @@ const AuthenticatedAdminKalendarRoute =
     path: '/kalendar',
     getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
+const AuthenticatedAdminGaleriaRoute =
+  AuthenticatedAdminGaleriaRouteImport.update({
+    id: '/galeria',
+    path: '/galeria',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
 const ApiPublicHooksSyncCalendarsRoute =
   ApiPublicHooksSyncCalendarsRouteImport.update({
     id: '/api/public/hooks/sync-calendars',
@@ -127,6 +134,7 @@ export interface FileRoutesByFullPath {
   '/rezervacia': typeof RezervaciaRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/admin': typeof AuthenticatedAdminRouteWithChildren
+  '/admin/galeria': typeof AuthenticatedAdminGaleriaRoute
   '/admin/kalendar': typeof AuthenticatedAdminKalendarRoute
   '/admin/nastavenia': typeof AuthenticatedAdminNastaveniaRoute
   '/admin/rezervacie': typeof AuthenticatedAdminRezervacieRoute
@@ -144,6 +152,7 @@ export interface FileRoutesByTo {
   '/kontakt': typeof KontaktRoute
   '/rezervacia': typeof RezervaciaRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/admin/galeria': typeof AuthenticatedAdminGaleriaRoute
   '/admin/kalendar': typeof AuthenticatedAdminKalendarRoute
   '/admin/nastavenia': typeof AuthenticatedAdminNastaveniaRoute
   '/admin/rezervacie': typeof AuthenticatedAdminRezervacieRoute
@@ -164,6 +173,7 @@ export interface FileRoutesById {
   '/rezervacia': typeof RezervaciaRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
+  '/_authenticated/admin/galeria': typeof AuthenticatedAdminGaleriaRoute
   '/_authenticated/admin/kalendar': typeof AuthenticatedAdminKalendarRoute
   '/_authenticated/admin/nastavenia': typeof AuthenticatedAdminNastaveniaRoute
   '/_authenticated/admin/rezervacie': typeof AuthenticatedAdminRezervacieRoute
@@ -184,6 +194,7 @@ export interface FileRouteTypes {
     | '/rezervacia'
     | '/sitemap.xml'
     | '/admin'
+    | '/admin/galeria'
     | '/admin/kalendar'
     | '/admin/nastavenia'
     | '/admin/rezervacie'
@@ -201,6 +212,7 @@ export interface FileRouteTypes {
     | '/kontakt'
     | '/rezervacia'
     | '/sitemap.xml'
+    | '/admin/galeria'
     | '/admin/kalendar'
     | '/admin/nastavenia'
     | '/admin/rezervacie'
@@ -220,6 +232,7 @@ export interface FileRouteTypes {
     | '/rezervacia'
     | '/sitemap.xml'
     | '/_authenticated/admin'
+    | '/_authenticated/admin/galeria'
     | '/_authenticated/admin/kalendar'
     | '/_authenticated/admin/nastavenia'
     | '/_authenticated/admin/rezervacie'
@@ -357,6 +370,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminKalendarRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
+    '/_authenticated/admin/galeria': {
+      id: '/_authenticated/admin/galeria'
+      path: '/galeria'
+      fullPath: '/admin/galeria'
+      preLoaderRoute: typeof AuthenticatedAdminGaleriaRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
     '/api/public/hooks/sync-calendars': {
       id: '/api/public/hooks/sync-calendars'
       path: '/api/public/hooks/sync-calendars'
@@ -368,6 +388,7 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedAdminRouteChildren {
+  AuthenticatedAdminGaleriaRoute: typeof AuthenticatedAdminGaleriaRoute
   AuthenticatedAdminKalendarRoute: typeof AuthenticatedAdminKalendarRoute
   AuthenticatedAdminNastaveniaRoute: typeof AuthenticatedAdminNastaveniaRoute
   AuthenticatedAdminRezervacieRoute: typeof AuthenticatedAdminRezervacieRoute
@@ -377,6 +398,7 @@ interface AuthenticatedAdminRouteChildren {
 }
 
 const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
+  AuthenticatedAdminGaleriaRoute: AuthenticatedAdminGaleriaRoute,
   AuthenticatedAdminKalendarRoute: AuthenticatedAdminKalendarRoute,
   AuthenticatedAdminNastaveniaRoute: AuthenticatedAdminNastaveniaRoute,
   AuthenticatedAdminRezervacieRoute: AuthenticatedAdminRezervacieRoute,

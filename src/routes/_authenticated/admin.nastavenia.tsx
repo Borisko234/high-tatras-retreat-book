@@ -73,6 +73,8 @@ function SettingsPage() {
     auto_confirm: false,
     payments_mode: "off",
     deposit_percent: "30",
+    ask_children: true,
+    ask_pets: true,
   });
 
   useEffect(() => {
@@ -92,8 +94,11 @@ function SettingsPage() {
       auto_confirm: Boolean(settings.auto_confirm),
       payments_mode: String(settings.payments_mode ?? "off"),
       deposit_percent: String(settings.deposit_percent ?? "30"),
+      ask_children: settings.ask_children == null ? true : Boolean(settings.ask_children),
+      ask_pets: settings.ask_pets == null ? true : Boolean(settings.ask_pets),
     });
   }, [settings]);
+
 
   const num = (v: string) => (v === "" ? 0 : Number(v) || 0);
 
