@@ -45,15 +45,16 @@ export function AvailabilityCalendar({ blocked, selected, onSelect, numberOfMont
         }}
         classNames={{
           months: "flex flex-col sm:flex-row gap-6",
-          month: "space-y-3",
-          month_caption: "flex justify-center pt-1 relative items-center font-display text-lg",
-          nav: "flex items-center gap-1",
+          month: "space-y-3 relative",
+          month_caption: "flex justify-center pt-1 items-center font-display text-lg",
+          nav: "absolute inset-x-1 top-0 flex items-center justify-between z-10 pointer-events-none",
           button_previous: cn(
-            "absolute left-1 top-1 size-8 inline-flex items-center justify-center rounded-md hover:bg-muted text-foreground/70",
+            "size-8 inline-flex items-center justify-center rounded-md hover:bg-muted text-foreground/70 pointer-events-auto disabled:opacity-30 disabled:pointer-events-none",
           ),
           button_next: cn(
-            "absolute right-1 top-1 size-8 inline-flex items-center justify-center rounded-md hover:bg-muted text-foreground/70",
+            "size-8 inline-flex items-center justify-center rounded-md hover:bg-muted text-foreground/70 pointer-events-auto disabled:opacity-30 disabled:pointer-events-none",
           ),
+
           month_grid: "w-full border-collapse",
           weekdays: "flex",
           weekday: "text-muted-foreground rounded-md w-9 font-normal text-[0.75rem] uppercase tracking-wider",
