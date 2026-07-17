@@ -61,6 +61,9 @@ function BookingPage() {
   const curSym = currency === "EUR" ? "€" : currency;
   const paymentsMode = String(settings.payments_mode ?? "off");
   const depositPercent = Number(settings.deposit_percent ?? 30);
+  const askChildren = settings.ask_children == null ? true : Boolean(settings.ask_children);
+  const askPets = settings.ask_pets == null ? true : Boolean(settings.ask_pets);
+
 
   const breakdown =
     nights > 0
