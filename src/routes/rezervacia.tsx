@@ -103,8 +103,9 @@ function BookingPage() {
           checkIn: toISODate(range.from),
           checkOut: toISODate(range.to),
           adults: Number(form.adults),
-          children: Number(form.children) || 0,
-          pets: Number(form.pets) || 0,
+          children: childrenNum,
+          pets: petsNum,
+
           name: form.name.trim(),
           email: form.email.trim(),
           phone: form.phone.trim(),
