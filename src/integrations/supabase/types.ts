@@ -125,6 +125,36 @@ export type Database = {
         }
         Relationships: []
       }
+      gallery_images: {
+        Row: {
+          active: boolean
+          alt: string | null
+          created_at: string
+          id: string
+          position: number
+          storage_path: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          alt?: string | null
+          created_at?: string
+          id?: string
+          position?: number
+          storage_path: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          alt?: string | null
+          created_at?: string
+          id?: string
+          position?: number
+          storage_path?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       ical_feeds: {
         Row: {
           color: string
