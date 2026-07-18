@@ -196,3 +196,67 @@ function BookingSection({ title, bookings, empty }: { title: string; bookings: B
     </Card>
   );
 }
+
+function ArrivalsDeparturesTimeline({ bookings, today }: { bookings: BookingRow[]; today: string }) {
+  type Event = { date: string; type: "in" | "out"; booking: BookingRow };
+  const events: Event[] = [];
+  for (const b of bookings) {
+    if (b.check_in >= today) events.push({ date: b.check_in, type: "in", booking: b });
+    if (b.check_out >= today) events.push({ date: b.check_out, type: "out", booking: b });
+  }
+  events.sort((a, b) => (a.date === b.date ? (a.type === "out" ? -1 : 1) : a.date.localeCompare(b.date)));
+
+  const grouped = new Map<string, Event[]>();
+  for (const e of events) {
+    if (!grouped.has(e.date)) grouped.set(e.date, []);
+    grouped.get(e.date)!.push(e);
+  }
+
+  const fmt = (iso: string) =>
+    new Date(iso + "T00:00:00").toLocaleDateString("sk-SK", { weekday: "long", day: "numeric", month: "long" });
+
+  if (grouped.size === 0) {
+    return (
+      <Card>
+        <CardContent className="p-6 text-sm text-muted-foreground">Žiadne nadchádzajúce príchody ani odchody.</CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="font-display text-lg">Kto prichádza a odchádza</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-5">
+        {Array.from(grouped.entries()).map(([date, evs]) => (
+          <div key={date}>
+            <div className={`text-sm font-medium mb-2 ${date === today ? "text-primary" : "text-foreground"}`}>
+              {fmt(date)}{date === today && " · dnes"}
+            </div>
+            <ul className="space-y-1.5">
+              {evs.map((e, i) => (
+                <li key={i} className="flex items-center gap-3 text-sm">
+                  <span
+                    className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium ${
+                      e.type === "in"
+                        ? "bg-emerald-500/15 text-emerald-700"
+                        : "bg-amber-500/15 text-amber-700"
+                    }`}
+                  >
+                    {e.type === "in" ? <><LogIn className="size-3" /> Príchod</> : <><LogOut className="size-3" /> Odchod</>}
+                  </span>
+                  <span className="font-medium">{e.booking.guest_name}</span>
+                  <span className="text-muted-foreground text-xs">
+                    {e.booking.check_in} → {e.booking.check_out} · {e.booking.guests_count} hostí
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </CardContent>
+    </Card>
+  );
+}
+
