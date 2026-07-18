@@ -62,8 +62,9 @@ function Dashboard() {
         <StatCard icon={<CalendarX className="size-4" />} label="Chybné feedy" value={failedFeeds.length} tone={failedFeeds.length ? "warn" : undefined} />
       </div>
 
-      <Tabs defaultValue="today">
+      <Tabs defaultValue="prichody">
         <TabsList>
+          <TabsTrigger value="prichody">Príchody a odchody</TabsTrigger>
           <TabsTrigger value="today">Dnes</TabsTrigger>
           <TabsTrigger value="pending">
             Čakajúce {pending.length > 0 && <span className="ml-1 text-xs">({pending.length})</span>}
@@ -73,6 +74,10 @@ function Dashboard() {
             Synchronizácia {failedFeeds.length > 0 && <span className="ml-1 text-xs text-destructive">({failedFeeds.length})</span>}
           </TabsTrigger>
         </TabsList>
+
+        <TabsContent value="prichody">
+          <ArrivalsDeparturesTimeline bookings={upcoming} today={today} />
+        </TabsContent>
 
         <TabsContent value="today" className="space-y-4">
           <BookingSection title="Príchody dnes" bookings={arrivalsToday} empty="Dnes nikto neprichádza." />
