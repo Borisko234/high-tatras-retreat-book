@@ -36,6 +36,7 @@ export function AvailabilityCalendar({ blocked, selected, onSelect, numberOfMont
         selected={selected}
         onSelect={onSelect}
         numberOfMonths={numberOfMonths}
+        navLayout="around"
         disabled={[{ before: today }, ...disabledDates]}
         showOutsideDays={false}
         weekStartsOn={1}
@@ -45,14 +46,13 @@ export function AvailabilityCalendar({ blocked, selected, onSelect, numberOfMont
         }}
         classNames={{
           months: "flex flex-col sm:flex-row gap-6",
-          month: "space-y-3 relative",
-          month_caption: "flex justify-center pt-1 items-center font-display text-lg",
-          nav: "absolute inset-x-1 top-0 flex items-center justify-between z-10 pointer-events-none",
+          month: "space-y-3",
+          month_caption: "flex justify-center pt-1 items-center font-display text-lg flex-1",
           button_previous: cn(
-            "size-8 inline-flex items-center justify-center rounded-md hover:bg-muted text-foreground/70 pointer-events-auto disabled:opacity-30 disabled:pointer-events-none",
+            "size-8 inline-flex items-center justify-center rounded-md hover:bg-muted text-foreground/70 disabled:opacity-30 disabled:pointer-events-none",
           ),
           button_next: cn(
-            "size-8 inline-flex items-center justify-center rounded-md hover:bg-muted text-foreground/70 pointer-events-auto disabled:opacity-30 disabled:pointer-events-none",
+            "size-8 inline-flex items-center justify-center rounded-md hover:bg-muted text-foreground/70 disabled:opacity-30 disabled:pointer-events-none",
           ),
 
           month_grid: "w-full border-collapse",
